@@ -105,7 +105,7 @@ def convert_to_csv(inputfile, outputfile):
         file.write('\n')
 
 def main():
-    convert_to_csv('tax-records.txt', 'tax-records.csv')
+    convert_to_csv('oxford-tax-records.txt', 'oxfird-tax-records.csv')
 
 if __name__ == "__main__":
     main()
