@@ -27,7 +27,7 @@ def is_record_line(tokens):
     # All records lines start with one or more spaces so the
     # start position of the first token must be greater than zero
     first_match = tokens[0]
-    if first_match.start() == 0:
+    if first_match.start() <= 1:
         return False
 
     first_string = first_match.group(0)
@@ -86,7 +86,7 @@ def process_file(filename):
             elif line_type == RECORD_DETAIL:
                 if record is None:
                     raise Exception
-                record.update(tokens)
+                record.update(tokens, line)
             elif line_type == EMPTY_LINE:
                 None
             elif line_type == REPORT_LINE:
@@ -105,7 +105,8 @@ def convert_to_csv(inputfile, outputfile):
         file.write('\n')
 
 def main():
-    convert_to_csv('oxford-tax-records.txt', 'oxfird-tax-records.csv')
+    convert_to_csv('oxford-tax-records.txt', 'oxford-tax-records.csv')
+    convert_to_csv('tax-records.txt', 'paris-tax-records.csv')
 
 if __name__ == "__main__":
     main()

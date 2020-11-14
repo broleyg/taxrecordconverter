@@ -252,7 +252,7 @@ Account Name & Address                       Land     Building    Exemption     
                               Land              Building               Exempt             Total                Tax
 Page Totals:               457,746               606,100               66,000           997,846           14,668.34
 Subtotals:               2,128,446             2,774,400              126,000         4,776,846           70,219.64
-Oxford                         Real Estate Tax Commitment Book - 14.700                             09/07/2018
+Oxford                         Real Estate Tax Commitment Book - 14.700                             09/07/2018
 2:33 PM                                        2019 Tax Commitment                                 Page      5
 Account Name & Address                      Land     Building    Exemption          Assessment            Tax
    1140   ALBRECHT DAVID                299,500            52,300             0          351,800       5,171.46
