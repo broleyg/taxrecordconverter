@@ -1,3 +1,5 @@
+import re
+
 class Position:
    def __init__(self, start, length, type="String", ignore=None):
        self.start = start
@@ -24,8 +26,12 @@ class TaxRecord:
         self.map = None
         self.tree_growth = False
         self.homestead = False
-        self.tax_rate = 0.00
-        self.land_rate = 0.00
+        self.soft = 0.0
+        self.hard = 0.0
+        self.mixed = 0.0
+        self.map_type = None
+        self.map_page = None
+        self.map_plot = None
 
         if self.tax > 0 and self.assessment_value > 0:
             self.tax_rate = self.tax / self.assessment_value * 100
@@ -42,14 +48,18 @@ class TaxRecord:
         buff = buff + "\n\tMap = {}".format(self.map)
         buff = buff + "\n\tTree Growth = {}".format(self.tree_growth)
         buff = buff + "\n\tHomestead = {}".format(self.homestead)
-        buff = buff + "\n\tTax Rate = {}".format(self.tax_rate)
-        buff = buff + "\n\tLand Rate = {}".format(self.land_rate)
+        buff = buff + "\n\tSoft = {}".format(self.soft)
+        buff = buff + "\n\tHard = {}".format(self.hard)
+        buff = buff + "\n\tMixed = {}".format(self.mixed)
+        buff = buff + "\n\tMap Type = {}".format(self.map_type)
+        buff = buff + "\n\tMap Page = {}".format(self.map_page)
+        buff = buff + "\n\tMap Plot= {}".format(self.map_plot)
 
         return buff
 
     def csv(self):
         buff = "{}".format(self.account_num)
-        buff = buff + ", {}".format(self.name)
+        buff = buff + ', "{}"'.format(self.name)
         buff = buff + ", {}".format(self.land_value)
         buff = buff + ", {}".format(self.bulding_value)
         buff = buff + ", {}".format(self.excemption_value)
@@ -59,28 +69,45 @@ class TaxRecord:
         buff = buff + ", {}".format(self.map)
         buff = buff + ", {}".format(self.tree_growth)
         buff = buff + ", {}".format(self.homestead)
-        buff = buff + ", {}".format(self.tax_rate)
-        buff = buff + ", {}".format(self.land_rate)
+        buff = buff + ", {}".format(self.soft)
+        buff = buff + ", {}".format(self.hard)
+        buff = buff + ", {}".format(self.mixed)
+        buff = buff + ", {}".format(self.map_type)
+        buff = buff + ", {}".format(self.map_page)
+        buff = buff + ", {}".format(self.map_plot)
 
         return buff
 
     def update(self, tokens):
-        token_count = len(tokens)
-        if token_count == 1:
-            value = tokens[0].group(0)
-            prefix = value[0:2]
-            if prefix == "R-" or prefix == "U-":
-                self.map = value
+        try:
+            token_count = len(tokens)
+            if token_count == 1:
+                value = tokens[0].group(0)
+                prefix = value[0:2]
+                if prefix == "R-" or prefix == "U-":
+                    self.map = value
+                    map_tokens = re.findall(r'[\w\.]+', value)
+                    self.map_type = map_tokens[0]
+                    self.map_page = map_tokens[1]
+                    self.map_plot = map_tokens[2]
 
-        for index in range(token_count):
-            value = tokens[index].group(0)
-            if value == "Acres":
-                self.acres = float(tokens[index+1].group(0))
-                if self.tax > 0 and self.acres > 0:
-                    self.land_rate = self.tax / self.acres
-            if value == "*TREE":
-                self.tree_growth = True
-            if value == "Homestead":
-                self.homestead = True
+            for index in range(token_count):
+                value = tokens[index].group(0)
+                if value == "Acres":
+                    self.acres = float(tokens[index+1].group(0))
+                    if self.tax > 0 and self.acres > 0:
+                        self.land_rate = self.tax / self.acres
+                if value == "Soft:":
+                    self.soft= float(tokens[index+1].group(0))
+                if value == "Hard:":
+                    self.hard= float(tokens[index+1].group(0))
+                if value == "Mixed:":
+                    self.mixed= float(tokens[index+1].group(0))
+                if value == "*TREE":
+                    self.tree_growth = True
+                if value == "Homestead":
+                    self.homestead = True
 
+        except Exception:
+           print(tokens)
 

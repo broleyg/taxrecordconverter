@@ -1,10 +1,11 @@
 import re
 from taxrecord import TaxRecord
 
-def extract_field(start, length, buffer):
-    value = buffer[start:length].strip()
-    print('value={}'.format(value))
-    return value
+RECORD_HEADER = 'H'
+RECORD_DETAIL = 'D'
+REPORT_LINE = 'X'
+EMPTY_LINE = 'E'
+UNIDENTIFIED_LINE = '?'
 
 def parse_line(line):
     words = []
@@ -40,6 +41,10 @@ def is_record_line(tokens):
 
 def is_first_record_line(tokens):
     first_match = tokens[0]
+
+    # The first line of each record has the account id of variable length
+    # but always left justified at the eight position in the line so if
+    # the first token starts after that we know its NOT the first line of the record
     if first_match.start() < 8:
         return True
     else:
@@ -48,51 +53,59 @@ def is_first_record_line(tokens):
 def is_empty_line(tokens):
     return len(tokens) == 0
 
-def convert():
-    in_record = False
+def determine_line_type(tokens):
+    if is_empty_line(tokens):
+        return EMPTY_LINE
+
+    if is_record_line(tokens):
+        if is_first_record_line(tokens):
+            return RECORD_HEADER
+        else:
+            return RECORD_DETAIL
+
+    return REPORT_LINE
+
+def process_file(filename):
+    line_type = None
     tokens = None
-    tax_record = None
     records = {}
-    i = 0
-    line_type = '?'
-    num = 0
-    with open('tax-records.txt', 'r') as infile:
+    record = None
+
+
+    with open(filename, 'r') as infile:
+        record = None
+        records = {}
+
         for line in infile:
-            i = i + 1
-            line_type = '?'
             tokens = parse_line(line)
-            if not is_empty_line(tokens):
-                if is_record_line(tokens):
-                    if is_first_record_line(tokens):
-                        line_type = 'F'
-                        in_record = True
-                        #dump_tokens(tokens)
-                        tax_record = TaxRecord(tokens)
-                        records[tax_record.account_num] = tax_record
-                    else:
-                        line_type = '-'
-                        tax_record.update(tokens)
-                else:
-                    line_type = 'x'
-                    if in_record:
-                        in_record = False
+            line_type =  determine_line_type(tokens)
+
+            if line_type == RECORD_HEADER:
+                record = TaxRecord(tokens)
+                records[record.account_num] = record
+            elif line_type == RECORD_DETAIL:
+                if record is None:
+                    raise Exception
+                record.update(tokens)
+            elif line_type == EMPTY_LINE:
+                None
+            elif line_type == REPORT_LINE:
+                None
             else:
-                line_type = '.'
+                print('{} {}'.format(line_type, line))
 
-            if line_type == 'F':
-                num = num + 1
-                #print('{} {} {} {}'.format(num, i, line_type, line[:-1]))
+        return records
 
-    print('*'*75)
+def convert_to_csv(inputfile, outputfile):
+    records = process_file(inputfile)
+
+    file = open(outputfile, 'w')
     for key, value in records.items():
-        print(value.csv())
-    print('*'*75)
-    print(len(records))
-
-
+        file.write(value.csv())
+        file.write('\n')
 
 def main():
-    convert()
+    convert_to_csv('tax-records.txt', 'tax-records.csv')
 
 if __name__ == "__main__":
     main()
